@@ -1,0 +1,32 @@
+{
+  "name": "discord_test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "build/app",
+  "scripts": {
+    "dev:compile": "tsc -w",
+    "dev:watch": "sleep 2 && nodemon",
+    "dev": "concurrently \"yarn:dev:*\"",
+    "build": "tsc"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "canvas": "^2.6.1",
+    "discord.js": "^12.2.0",
+    "dotenv": "^8.2.0",
+    "ioredis": "^4.19.4",
+    "jimp": "^0.16.1",
+    "python-shell": "^2.0.1",
+    "redis": "^3.0.2"
+  },
+  "devDependencies": {
+    "@types/ioredis": "^4.17.8",
+    "@types/node": "^14.0.24",
+    "@types/redis": "^2.8.28",
+    "concurrently": "^5.2.0",
+    "nodemon": "^2.0.4",
+    "ts-node": "^8.10.2",
+    "typescript": "^3.9.7"
+  }
+}
