@@ -114,7 +114,8 @@ abstract class Command {
     protected async invalid(msg: Message, reason?: string) {
         msg.react(this.Emote.Crossmark) // async
         if (reason) {
-            const listener = (r: MessageReaction, user: User) => r.me && msg.author.id === user.id
+            console.log('author.id:', msg.author.id)
+            const listener = (r: MessageReaction, user: User) => r.emoji.name === this.Emote.Crossmark && msg.author.id === user.id
             const rs = await msg.awaitReactions(listener, { max: 1, time: 15000 })
             if (rs.size > 0) msg.channel.send(`> ${msg.content}\n**Error:** ${reason}`)
         }

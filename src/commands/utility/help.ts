@@ -1,9 +1,9 @@
-import { Self } from '../../Self'
+import { CommandDictionary, Self } from '../../Self'
 import { Command, Category } from '..'
 import { Message, Snowflake } from 'discord.js'
 
 export default class Help extends Command {
-    private commands: Map<string, Command>
+    private commands: CommandDictionary
     constructor(self: Self) {
         super({
             name: 'help',
@@ -16,12 +16,12 @@ export default class Help extends Command {
             botOwner: true,
             self,
         })
-        this.commands = this.self.commands
+        this.commands = self.commands
     }
 
     private generateHelp(guildID: Snowflake | null) {
         const helps: Map<Category, string> = new Map()
-        this.commands.forEach(cmd => {
+        Object.values(this.commands).forEach(cmd => {
             if (guildID && typeof cmd.guild !== 'boolean' && !cmd.guild.includes(guildID))
                 return
             const help = helps.get(cmd.category) || ''
@@ -36,7 +36,7 @@ export default class Help extends Command {
     public async run(msg: Message, params: string[]) {
         if (params.length > 0) {
             const cmdName = params.shift()
-            const cmd = this.commands.get(cmdName!)
+            const cmd = this.commands[cmdName!]
             if (cmd) {
                 await msg.channel.send(cmd.runHelp(true))
             } else {

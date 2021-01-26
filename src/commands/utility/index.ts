@@ -9,6 +9,8 @@ import Python from './coding/python'
 import CPP from './coding/cpp'
 import React from './react'
 import Bot from './owner/bot'
+import Welcome from './moderation/welcome'
+import Config from './moderation/config'
 
 export const CommandList = {
     ban: Ban,
@@ -22,4 +24,6 @@ export const CommandList = {
     cpp: CPP,
     react: React,
     bot: Bot,
+    welcome: Welcome,
+    config: Config,
 }

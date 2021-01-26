@@ -1,14 +1,13 @@
-import Handler from './Handler'
+import { Handler } from '.'
 import Discord from 'discord.js'
-import { Command } from '../commands'
-import { Self } from '../Self'
+import { CommandDictionary, Self } from '../Self'
 
 export default class Message extends Handler<'message'> {
     private prefix: string = this.self.prefix
     constructor(self: Self) {
         super(self, 'message')
     }
-    private commands: Map<string, Command> = this.self.commands
+    private commands: CommandDictionary = this.self.commands
     private aliases: Map<string, string> = this.self.aliases
 
     // dryRun(msg: Discord.Message): [string, string[]] | [] {
@@ -27,7 +26,10 @@ export default class Message extends Handler<'message'> {
         const params = msg.content.split(' ')
         const inputCmd = params.shift()!.slice(this.prefix.length)
         const cmdName = this.aliases.get(inputCmd) || inputCmd
-        const cmd = this.commands.get(cmdName)
+        const cmd = this.commands[cmdName]
+
+        // partial checks
+        if (msg.member?.partial) await msg.member.fetch()
 
         if (cmd && (await cmd.validate(msg, params))) {
             await cmd.run(msg, params)

@@ -1,4 +1,5 @@
-import { GuildMember, Message } from 'discord.js'
+import { GuildMember, Message, TextChannel } from 'discord.js'
+import { readFileSync } from 'fs'
 import Jimp from 'jimp'
 import { Command, Category } from '../..'
 import { Self } from '../../../Self'
@@ -21,7 +22,12 @@ export default class Welcome extends Command {
     public async run(msg: Message, params: string[]) {
         const memberID = this.helpers.resolveMention(params.shift()!)
         const member = await msg.guild!.members.fetch(memberID).catch(console.error)
-        if (member) this.welcome(member, true)
+
+        if (member) {
+            console.log(member.id)
+            const exitCode = await this.welcome(member, true)
+            console.log(exitCode)
+        }
     }
 
     public async welcome(member: GuildMember, force?: boolean) {
@@ -47,13 +53,39 @@ export default class Welcome extends Command {
     }
 
     public async welcomeXeno(member: GuildMember) {
-        const welcomeImage = await Jimp.read("assets/welcome.png")
-        const fontCodes = new Set(require('../../../assets/font.json').concat(32) as number[]) // spaces included
-        const avatar = await Jimp.read(member.user.displayAvatarURL({ size: 512 }))
+        const image = await Jimp.read("src/assets/welcome.png")
+        const font = await Jimp.loadFont("src/assets/font.fnt")
+        const fontCodeArray = JSON.parse(readFileSync('src/assets/font.json', { encoding: 'utf-8' })) as number[]
 
-        let tag = member.user.tag
-        for (let i = 0; i < tag.length; i++) {
-            if ()
+        const fontCodes = new Set(fontCodeArray.concat(32)) // spaces included
+
+        // place avatar in the welcome image
+        const avatar = await Jimp.read(member.user.displayAvatarURL({ size: 512, format: 'png' }))
+        avatar.resize(290, 290)
+        image.composite(avatar, 407, 248, { mode: Jimp.BLEND_DESTINATION_OVER } as any) // TODO: fix this
+
+        // replace unsupported characters
+        const tagArray = member.user.tag.split('')
+        for (let i = 0; i < tagArray.length; i++) {
+            if (!fontCodes.has(tagArray[i].charCodeAt(0))) tagArray[i] = '_'
         }
+        let tag = tagArray.join('')
+
+        // ensure discord tag width does not exceed 1024 px
+        let width = Jimp.measureText(font, tag) + (tag.split(' ').length - 1) * 39 // width = character length + spaces * 39
+
+        while (width > 1024) { // TODO: optimise this
+            tag = tag.slice(0, -1)
+            width = Jimp.measureText(font, tag) + (tag.split(' ').length - 1) * 39
+        }
+
+        // print text on image
+        image.print(font, ~~(552 - width / 2), 635, { text: tag })
+
+        const imageBuffer = await image.getBufferAsync('image/png')
+
+        const channelID = await this.redis.hget(`guilds:${member.guild.id}:config`, 'welcome')
+        const channel = member.guild.channels.resolve(channelID!) as TextChannel
+        channel.send('welcome bitch', { files: [{ attachment: imageBuffer, name: 'welcome.png' }] })
     }
 }

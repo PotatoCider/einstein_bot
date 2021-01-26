@@ -8,7 +8,7 @@ export default class Config extends Command {
             name: 'config',
             category: Category.Moderation,
             desc: 'Change guild config',
-            syntax: ['<key> <value>'],
+            syntax: ['<key> [value]'],
             aliases: [],
             perms: ['ADMINISTRATOR'],
             guild: true,
@@ -18,7 +18,7 @@ export default class Config extends Command {
 
     public async run(msg: Message, params: string[]) {
         const key = params.shift()
-        const value = params.join(' ').toLowerCase()
+        const value = params.join(' ')
         switch (key) {
             case 'welcome':
                 this.welcome(msg, value)
@@ -30,34 +30,31 @@ export default class Config extends Command {
 
     async welcome(msg: Message, value: string) {
         const configKey = `guilds:${msg.guild!.id}:config`
-        const isWelcomeEnabled = !!(await this.redis.hexists(configKey, 'welcome'))
+        const welcomeCh = await this.redis.hget(configKey, 'welcome')
 
-        let toEnable: boolean
         switch (value) {
-            case 'toggle':
-                toEnable = !isWelcomeEnabled
-                break
-            case 'on':
-                toEnable = true
-                break
+            case '':
+                msg.channel.send(`Welcome is ${welcomeCh ? `enabled in <#${welcomeCh}>` : 'disabled'}`)
+                return
+            case 'disable':
+            case 'disabled':
             case 'off':
-                toEnable = false
-                break
-            default:
-                this.invalid(msg, 'Proper syntax: `config welcome [on/off/toggle(default)]`')
+                if (welcomeCh) {
+                    this.redis.hdel(configKey, 'welcome')
+                    msg.channel.send('Welcome is now off')
+                } else {
+                    msg.channel.send('Welcome is already off')
+                }
                 return
         }
-        if (toEnable === isWelcomeEnabled) {
-            msg.channel.send(`Welcome is already ${toEnable ? 'on' : 'off'}`)
-            return
-        }
 
-        if (toEnable) {
-            this.redis.hset(configKey, 'welcome', '1')
+        const channelID = this.helpers.resolveMention(value)
+        const channel = msg.guild!.channels.resolve(channelID)
+        if (channel && channel.isText) {
+            this.redis.hset(configKey, 'welcome', channel.id)
+            msg.channel.send(`Welcome is now enabled in ${channel}`)
         } else {
-            this.redis.hdel(configKey, 'welcome')
+            this.invalid(msg, 'Invalid text channel (`config welcome #channel/off`)')
         }
-
-        msg.channel.send(`Welcome is now ${toEnable ? 'on' : 'off'}`)
     }
 }
