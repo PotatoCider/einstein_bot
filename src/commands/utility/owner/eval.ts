@@ -50,7 +50,7 @@ export default class Eval extends Command {
     public async run(msg: Message, params: string[], sent?: Message) {
         let code = params.join(' ')
 
-        if (!sent) sent = await msg.channel.send('running...', { code: 'prolog' })
+        if (!sent) sent = await msg.channel.send({ content: '```prolog\nrunning...```' })
         this.eval(code, msg, this.getPrinter(sent))
         const handler = (_: Message | PartialMessage, newMsg: Message | PartialMessage) => {
             if (newMsg.id !== msg.id || newMsg.partial) return

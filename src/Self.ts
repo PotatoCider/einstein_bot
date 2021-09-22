@@ -1,4 +1,4 @@
-import { Client } from 'discord.js'
+import { Client, Intents } from 'discord.js'
 
 import { Command, Commands } from './commands'
 import { HandlerList } from './handlers'
@@ -11,7 +11,16 @@ export type CommandDictionary = { [key: string]: Command }
 export const BOT_OWNER = '250140362880843776'
 
 export class Self {
-    public client: Client = new Client()
+    public client: Client = new Client({
+        intents: [
+            Intents.FLAGS.GUILDS,
+            Intents.FLAGS.GUILD_MESSAGES,
+            Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+            Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS,
+            Intents.FLAGS.GUILD_MEMBERS,
+            Intents.FLAGS.GUILD_BANS,
+        ]
+    })
     public redis: Redis = new IORedis()
     public commands: CommandInstances = {} as CommandInstances // will be initialized in .loadCommands()
     public aliases: Map<string, string> = new Map()

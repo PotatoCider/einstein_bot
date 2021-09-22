@@ -1,13 +1,16 @@
-import { ClientEvents } from "discord.js"
+import { Client, ClientEvents } from "discord.js"
+import { Redis } from "ioredis"
 import { Self } from "../Self"
 
 export type BoundHandler<K extends keyof ClientEvents> = (...args: ClientEvents[K]) => void
 
 export default abstract class Handler<K extends keyof ClientEvents>{
     public bounded: BoundHandler<K>[] = []
-    protected redis = this.self.redis
-    protected client = this.self.client
+    protected redis: Redis
+    protected client: Client
     constructor(protected self: Self, public readonly event: K) {
+        this.redis = this.self.redis
+        this.client = this.self.client
         self.client.on(event, (...args) => this.run(...args))
     }
 

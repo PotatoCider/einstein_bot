@@ -6,7 +6,7 @@ import {
     MessageEmbed,
     Snowflake,
     Constants as DiscordConstants,
-    DiscordAPIError, MessageReaction, User
+    DiscordAPIError, MessageReaction, User, ColorResolvable
 } from 'discord.js'
 import { Helpers } from '../utils'
 import { Redis } from 'ioredis'
@@ -29,6 +29,7 @@ export enum Category {
     Coding = 'Coding',
     Moderation = 'Moderation',
     OwnerOnly = 'Owner Only',
+    Music = 'Music',
     Custom = 'Custom',
 }
 
@@ -78,7 +79,7 @@ abstract class Command {
 
     abstract run(msg: Message, params: string[]): Promise<void>
 
-    protected embed(color: string = this.Constants.Random) {
+    protected embed(color: ColorResolvable = this.Constants.Random) {
         return new MessageEmbed().setColor(color)
     }
 
@@ -116,7 +117,7 @@ abstract class Command {
         if (reason) {
             console.log('author.id:', msg.author.id)
             const listener = (r: MessageReaction, user: User) => r.emoji.name === this.Emote.Crossmark && msg.author.id === user.id
-            const rs = await msg.awaitReactions(listener, { max: 1, time: 15000 })
+            const rs = await msg.awaitReactions({ filter: listener, max: 1, time: 15000 })
             if (rs.size > 0) msg.channel.send(`> ${msg.content}\n**Error:** ${reason}`)
         }
     }
@@ -132,7 +133,7 @@ abstract class Command {
             return false
         }
         // TODO: remove this cheatcode
-        if (msg.author.id !== BOT_OWNER && msg.member && !msg.member.hasPermission(this.perms)) {
+        if (msg.author.id !== BOT_OWNER && msg.member && !msg.member.permissions.has(this.perms)) {
             await this.unauthorised(msg)
             return false
         }
@@ -140,8 +141,8 @@ abstract class Command {
             await msg.channel.send([
                 'Not enough parameters.',
                 `Syntax:`,
-                this.usage.join('\n')
-            ])
+                this.usage.join('\n'),
+            ].join('\n'))
             return false
         }
         return true

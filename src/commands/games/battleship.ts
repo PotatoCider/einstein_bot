@@ -3,6 +3,7 @@ import {
     Message,
     MessageEmbed,
     CollectorFilter,
+    MessageReaction,
 } from 'discord.js'
 import { Command, Category } from '../'
 import { CooldownTracker } from '../../utils'
@@ -96,7 +97,7 @@ export default class BattleShip extends Command {
         gs[1].spawnAll()
 
         let ms = [
-            await ps[0].send(this.getGridEmbed(gs[0], gs[1], true, false)),
+            await ps[0].send({ embeds: [this.getGridEmbed(gs[0], gs[1], true, false)] }),
             null,
         ]
 
@@ -104,12 +105,14 @@ export default class BattleShip extends Command {
             hit = false
         while (gs[p].alive) {
             ms = await Promise.all([
-                ms[p]!.edit(this.getGridEmbed(gs[p], gs[p ^ 1], true, hit)), // next player's turn
-                ps[p ^ 1].send(this.getGridEmbed(gs[p ^ 1], gs[p], false, hit)), // prev player's turn
+                ms[p]!.edit({ embeds: [this.getGridEmbed(gs[p], gs[p ^ 1], true, hit)] }), // next player's turn
+                ps[p ^ 1].send({ embeds: [this.getGridEmbed(gs[p ^ 1], gs[p], false, hit)] }), // prev player's turn
             ])
             const res = await ps[p].dmChannel!.awaitMessages(
-                FilterCoordinates(ps[p]),
-                CoordinateCollectorOptions
+                {
+                    filter: FilterCoordinates(ps[p]),
+                    ...CoordinateCollectorOptions,
+                }
             )
             ms[p]!.delete()
             const [x, y] = res.first()!.content.split(' ')
@@ -124,13 +127,14 @@ export default class BattleShip extends Command {
             .setDescription(`${p2}, **${p1.tag}** invited you to a battleship game!`)
             .setFooter('✅ to accept, ❌ to reject.')
             .setColor('RANDOM')
-        const reply = await msg.channel.send(embed)
+        const reply = await msg.channel.send({ embeds: [embed] })
         reply.react('✅')
         reply.react('❌')
 
-        const filter: CollectorFilter = (reaction, user) =>
-            user.id === p2.id && ['✅', '❌'].includes(reaction.emoji.name)
-        const collected = await reply.awaitReactions(filter, {
+        const filter: CollectorFilter<[MessageReaction, User]> = (reaction, user) =>
+            user.id === p2.id && ['✅', '❌'].includes(reaction.emoji.name || '')
+        const collected = await reply.awaitReactions({
+            filter,
             max: 1,
             idle: 15000,
         })
@@ -139,8 +143,9 @@ export default class BattleShip extends Command {
             embed
                 .setDescription(`**${p2.tag}** has rejected your invitation.`)
                 .setFooter('')
-            await reply.edit(embed)
-            await reply.delete({ timeout: 7000 })
+            await reply.edit({ embeds: [embed] })
+            await new Promise(r => setTimeout(r, 7000));
+            await reply.delete()
             return false
         }
         reply.delete()

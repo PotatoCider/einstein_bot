@@ -63,16 +63,16 @@ export default class CPP extends Command {
             const embed = this.embed()
                 .setDescription('```prolog\n' + stderr + '```')
                 .setFooter(`Compilation failed | Time taken: ${t2 - t1}ms`)
-            msg.channel.send(embed)
+            msg.channel.send({ embeds: [embed] })
             return
         }
-        const collector = msg.channel.createMessageCollector(m => m.author.id === msg.author.id)
+        const collector = msg.channel.createMessageCollector({ filter: m => m.author.id === msg.author.id })
         const accumulator = new MessageAccumulator(msg.channel)
         accumulator.setDelimiter('').prepend('```prolog\n').append('```')
 
         const program = spawn('exec/' + msg.author.id)
 
-        collector.on('collect', m => program.stdin.write(m.content + '\n'))
+        collector.on('collect', m => void (program.stdin.write(m.content + '\n')))
 
         program.stdout.on('data', (chunk: Buffer) => accumulator.send(chunk.toString()))
         program.stdout.once('end', () => {
@@ -82,7 +82,7 @@ export default class CPP extends Command {
             const embed = this.embed()
                 .setDescription(`[Program](${msg.url}) ended.`)
                 .setFooter(`Compile time taken: ${t2 - t1}ms | Program time taken: ${t3 - t2}ms`)
-            msg.channel.send(embed)
+            msg.channel.send({ embeds: [embed] })
         })
     }
 }

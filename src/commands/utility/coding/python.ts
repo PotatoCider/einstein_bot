@@ -50,12 +50,12 @@ export default class Python extends Command {
 
         let term: boolean = false
         let timedout: boolean = false
-        this.client.setTimeout(() => {
+        setTimeout(() => {
             term = timedout = true
             sh.kill()
         }, 30000)
-        const collector = msg.channel.createMessageCollector(m => m.author.id === msg.author.id)
-        collector.on('collect', m => sh.send(m.content))
+        const collector = msg.channel.createMessageCollector({ filter: m => m.author.id === msg.author.id })
+        collector.on('collect', m => void (sh.send(m.content)))
 
         const accumulator = new MessageAccumulator(msg.channel)
         accumulator.prepend('```prolog\n').append('```')
@@ -79,10 +79,10 @@ export default class Python extends Command {
             const embed = this.embed()
                 .setDescription(`[Script](${msg.url}) ${verb}.`)
                 .setFooter(`Time taken: ${timeTaken}ms`)
-            msg.channel.send(embed)
+            msg.channel.send({ embeds: [embed] })
         })
         sh.once('error', (err: PythonShellError) => {
-            msg.channel.send(err.traceback, { code: 'prolog' })
+            msg.channel.send('```prolog\n' + err.traceback + '```')
         })
     }
 }

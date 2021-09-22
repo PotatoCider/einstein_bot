@@ -19,11 +19,11 @@ export default class Unban extends Command {
     private async unbanAll(msg: Message, reason?: string) {
         let unbanned = 0
         const m = await msg.channel.send(`Unbanned ${unbanned} members.`)
-        const bans = await msg.guild!.fetchBans()
+        const bans = await msg.guild!.bans.fetch()
         const ps = bans.map(banInfo => msg.guild!.members.unban(banInfo.user, reason).then(() => { unbanned++ }))
-        const timer = this.client.setInterval(() => m.edit(`Unbanned ${unbanned} members.`), 1000)
+        const timer = setInterval(() => m.edit(`Unbanned ${unbanned} members.`), 1000)
         await Promise.all(ps)
-        this.client.clearInterval(timer)
+        clearInterval(timer)
         m.edit(`Unbanned ${unbanned} members.`)
         m.react(this.Emote.Checkmark)
     }

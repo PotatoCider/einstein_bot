@@ -86,6 +86,6 @@ export default class Welcome extends Command {
 
         const channelID = await this.redis.hget(`guilds:${member.guild.id}:config`, 'welcome')
         const channel = member.guild.channels.resolve(channelID!) as TextChannel
-        channel.send('welcome bitch', { files: [{ attachment: imageBuffer, name: 'welcome.png' }] })
+        channel.send({ content: 'welcome bitch', files: [{ attachment: imageBuffer, name: 'welcome.png' }] })
     }
 }

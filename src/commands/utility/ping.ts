@@ -21,10 +21,9 @@ export default class Ping extends Command {
             .setDescription('Ping!')
             .setFooter('Note: this is not your real ping, its the bot\'s ping.')
         const start = Date.now()
-        const pong = await msg.channel.send(embed)
+        const pong = await msg.channel.send({ embeds: [embed] })
         const end = Date.now()
-        await pong.edit(
-            embed.setDescription(`Pong! Time taken: \`${end - start}ms\``)
-        )
+        embed.setDescription(`Pong! Time taken: \`${end - start}ms\``)
+        await pong.edit({ embeds: [embed] })
     }
 }

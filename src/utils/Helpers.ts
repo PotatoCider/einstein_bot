@@ -1,6 +1,12 @@
 import { Guild } from "discord.js"
+import { PremiumTier } from "discord.js"
 
-const slots = [50, 100, 150, 250]
+const slots: { [K in PremiumTier]: number } = {
+    NONE: 50,
+    TIER_1: 100,
+    TIER_2: 150,
+    TIER_3: 250,
+}
 
 const Helpers = {
     // resolveMentions

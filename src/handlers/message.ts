@@ -2,10 +2,10 @@ import { Handler } from '.'
 import Discord from 'discord.js'
 import { CommandDictionary, Self } from '../Self'
 
-export default class Message extends Handler<'message'> {
+export default class Message extends Handler<'messageCreate'> {
     private prefix: string = this.self.prefix
     constructor(self: Self) {
-        super(self, 'message')
+        super(self, 'messageCreate')
     }
     private commands: CommandDictionary = this.self.commands
     private aliases: Map<string, string> = this.self.aliases

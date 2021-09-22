@@ -23,9 +23,16 @@ export default class Config extends Command {
             case 'welcome':
                 this.welcome(msg, value)
                 break
+            case 'whitelist':
+                this.whitelist(msg, value)
+                break
             default:
                 return this.invalid(msg, 'no such config')
         }
+    }
+
+    async whitelist(_msg: Message, _value: string) {
+        // const key = `guilds:${msg.guild!.id}:whitelist`
     }
 
     async welcome(msg: Message, value: string) {

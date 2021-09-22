@@ -16,7 +16,7 @@ export default class CooldownTracker {
     // Sets a cooldown on a user for this command
     public set(user: User, t: number) {
         const now = Date.now()
-        const timer = user.client.setTimeout(() => this.map.delete(user), t)
+        const timer = setTimeout(() => this.map.delete(user), t)
 
         const cd: UserCooldown = {
             user,
@@ -38,7 +38,7 @@ export default class CooldownTracker {
         const sent = await channel.send(
             `You're on cooldown. ${cd.secsLeft()}s left.`
         )
-        user.client.setTimeout(() => sent.delete(), cd.timeLeft())
+        setTimeout(() => sent.delete(), cd.timeLeft())
         return sent
     }
 }

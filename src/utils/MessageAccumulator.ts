@@ -1,10 +1,9 @@
-import { TextChannel, Client, DMChannel, NewsChannel, MessageEmbed } from 'discord.js'
+import { TextChannel, DMChannel, NewsChannel, MessageEmbed, TextBasedChannels } from 'discord.js'
 
 export default class MessageAccumulator {
     constructor(
-        public channel: TextChannel | DMChannel | NewsChannel,
+        public channel: TextBasedChannels,
     ) { }
-    private client: Client = this.channel.client
     private queue: string = ''
     private delimiter: string = '\n'
     private prefix: string = ''
@@ -20,7 +19,7 @@ export default class MessageAccumulator {
         return this
     }
 
-    private timeout: NodeJS.Timeout = this.client.setTimeout(() => this.flush(), this.time)
+    private timeout: NodeJS.Timeout = setTimeout(() => this.flush(), this.time)
 
     public send(content: string) {
         this.queue += content + this.delimiter

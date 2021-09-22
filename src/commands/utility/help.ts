@@ -46,6 +46,6 @@ export default class Help extends Command {
         }
         const embed = this.generateHelp(msg.guild && msg.guild.id)
         // .setColor(this.Constants.Random)
-        await msg.channel.send(embed)
+        await msg.channel.send({ embeds: [embed] })
     }
 }
